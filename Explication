@@ -1,0 +1,3 @@
+# Telechargement de buildroot:
+# Clonez Buildroot depuis le d´ep^ot officiel
+git clone git://git.buildroot.net/buildroot
