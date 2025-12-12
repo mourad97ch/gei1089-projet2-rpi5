@@ -1,52 +1,51 @@
 Projet Linux embarqué – Raspberry Pi 5 (Buildroot)
 1. Objectif du projet
 
-Ce projet consiste à construire une image Linux embarquée pour Raspberry Pi 5 à l’aide de Buildroot.
+  Ce projet consiste à construire une image Linux embarquée pour Raspberry Pi 5 à l’aide de Buildroot.
 Le système final doit :
 
-booter correctement sur le Raspberry Pi 5,
+* booter correctement sur le Raspberry Pi 5,
 
-créer un point d’accès WiFi,
+* créer un point d’accès WiFi,
 
-fournir un service DHCP/DNS,
+* fournir un service DHCP/DNS,
 
-héberger un broker MQTT local,
+* héberger un broker MQTT local,
 
-permettre un accès SSH,
+* permettre un accès SSH,
 
-lancer automatiquement une application graphique PyQt5 fournie,
+* lancer automatiquement une application graphique PyQt5 fournie,
 
-afficher un splash screen personnalisé au démarrage.
+* afficher un splash screen personnalisé au démarrage.
 
-Seuls les répertoires etc/ et usr/bin/ sont fournis.
-L’ensemble de l’infrastructure système doit être construit par l’étudiant.
+@@@@ Seuls les répertoires etc/ et usr/bin/ sont fournis. @@@@
+✍️ L’ensemble de l’infrastructure système doit être construit par Nous.
 
 2. Organisation générale du système Linux
 
-Linux utilise une hiérarchie de répertoires standard.
-Chaque répertoire a un rôle précis.
+Linux utilise une hiérarchie de répertoires standard, chaque répertoire a un rôle précis.
 
 Dans ce projet, deux répertoires sont fournis par l’enseignant :
 
-2.1 /etc – Configuration du système
+📌 2.1 /etc – Configuration du système
 
 Le répertoire /etc contient uniquement des fichiers de configuration et des scripts de démarrage.
 
 Dans ce projet, /etc contient :
 
-init.d/
+   * init.d/
 
-S40network : script de démarrage du réseau (WiFi, DHCP, MQTT)
+   * S40network : script de démarrage du réseau (WiFi, DHCP, MQTT)
 
-S57app : script de démarrage automatique de l’application PyQt5
+   * S57app : script de démarrage automatique de l’application PyQt5
 
-hostapd/hostapd.config : configuration du point d’accès WiFi
+   * hostapd/hostapd.config : configuration du point d’accès WiFi
 
-dnsmasq.conf : configuration DHCP/DNS
+   * dnsmasq.conf : configuration DHCP/DNS
 
-mosquitto/mosquitto.conf : configuration du broker MQTT
+   * mosquitto/mosquitto.conf : configuration du broker MQTT
 
-network/interfaces : configuration réseau statique de l’interface WiFi
+   * network/interfaces : configuration réseau statique de l’interface WiFi
 
 👉 Rôle de /etc :
 Définir le comportement du système (réseau, services, démarrage).
