@@ -13,6 +13,12 @@ make menuconfig
 #compilation
 make -j$(nproc)
 
+# creation des dossier :
+mkdir -p overlay/{etc/init.d,etc/hostapd,etc/mosquitto,etc/network,usr/bin}
+
+# afficher tout le contenue de overlay/
+tree overlay/ ou ls -R overlay
+
 
 
 
