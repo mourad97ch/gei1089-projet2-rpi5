@@ -1,3 +1,6 @@
 # Telechargement de buildroot:
 # Clonez Buildroot depuis le d´ep^ot officiel
 git clone git://git.buildroot.net/buildroot
+
+# Explorez les diff´erents param`etres propos´es par Buildroot
+make menuconfig
