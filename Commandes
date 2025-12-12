@@ -2,5 +2,18 @@
 # Clonez Buildroot depuis le d´ep^ot officiel
 git clone git://git.buildroot.net/buildroot
 
+# Lancez l’utilitaire de configuration de Buildroot pour le target
+make (Model_defconfig)
+
+
 # Explorez les diff´erents param`etres propos´es par Buildroot
 make menuconfig
+
+
+#compilation
+make -j$(nproc)
+
+
+
+
+
