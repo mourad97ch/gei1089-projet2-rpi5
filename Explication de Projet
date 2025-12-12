@@ -1,0 +1,205 @@
+Projet Linux embarqué – Raspberry Pi 5 (Buildroot)
+1. Objectif du projet
+
+Ce projet consiste à construire une image Linux embarquée pour Raspberry Pi 5 à l’aide de Buildroot.
+Le système final doit :
+
+booter correctement sur le Raspberry Pi 5,
+
+créer un point d’accès WiFi,
+
+fournir un service DHCP/DNS,
+
+héberger un broker MQTT local,
+
+permettre un accès SSH,
+
+lancer automatiquement une application graphique PyQt5 fournie,
+
+afficher un splash screen personnalisé au démarrage.
+
+Seuls les répertoires etc/ et usr/bin/ sont fournis.
+L’ensemble de l’infrastructure système doit être construit par l’étudiant.
+
+2. Organisation générale du système Linux
+
+Linux utilise une hiérarchie de répertoires standard.
+Chaque répertoire a un rôle précis.
+
+Dans ce projet, deux répertoires sont fournis par l’enseignant :
+
+2.1 /etc – Configuration du système
+
+Le répertoire /etc contient uniquement des fichiers de configuration et des scripts de démarrage.
+
+Dans ce projet, /etc contient :
+
+init.d/
+
+S40network : script de démarrage du réseau (WiFi, DHCP, MQTT)
+
+S57app : script de démarrage automatique de l’application PyQt5
+
+hostapd/hostapd.config : configuration du point d’accès WiFi
+
+dnsmasq.conf : configuration DHCP/DNS
+
+mosquitto/mosquitto.conf : configuration du broker MQTT
+
+network/interfaces : configuration réseau statique de l’interface WiFi
+
+👉 Rôle de /etc :
+Définir le comportement du système (réseau, services, démarrage).
+
+2.2 /usr/bin – Programmes utilisateur
+
+Le répertoire /usr/bin contient les exécutables et applications.
+
+Dans ce projet :
+
+TankApp : application graphique PyQt5 fournie
+
+👉 Rôle de /usr/bin :
+Contenir les programmes qui seront exécutés par l’utilisateur ou automatiquement au démarrage.
+
+3. Pourquoi seuls etc/ et usr/bin/ sont fournis ?
+
+L’enseignant fournit uniquement :
+
+la configuration (etc/)
+
+l’application (usr/bin/TankApp)
+
+Il ne fournit aucune infrastructure système.
+
+Cela oblige l’étudiant à :
+
+comprendre quels services sont nécessaires,
+
+identifier les paquets Buildroot requis,
+
+construire un système Linux complet capable d’exécuter ces fichiers.
+
+C’est l’objectif pédagogique principal du projet :
+👉 déduire les dépendances et construire le système autour de la configuration fournie.
+
+4. Autres répertoires nécessaires (non fournis)
+
+Les répertoires suivants sont indispensables au fonctionnement de Linux, mais ne sont pas fournis manuellement.
+Ils sont générés automatiquement par Buildroot.
+
+Répertoires système essentiels
+
+/bin : commandes de base (sh, ls, cp, etc.)
+
+/sbin : commandes système (réseau, reboot, etc.)
+
+/lib, /lib64 : bibliothèques partagées
+
+/usr/lib : bibliothèques Qt, Python, PyQt5
+
+/usr/share : données non exécutables (images, splash screen)
+
+/dev : périphériques matériels (WiFi, framebuffer, carte SD)
+
+/proc : interface noyau
+
+/sys : informations matérielles
+
+/tmp : fichiers temporaires
+
+/var : fichiers temporaires et logs des services
+
+👉 Ces répertoires ne sont pas créés à la main.
+👉 Ils sont générés par Buildroot selon les paquets activés.
+
+5. Intégration via overlay
+
+Les fichiers fournis sont intégrés au système via un overlay Buildroot :
+
+overlay/
+ ├── etc/
+ │   ├── init.d/
+ │   │   ├── S40network
+ │   │   └── S57app
+ │   ├── hostapd/hostapd.config
+ │   ├── mosquitto/mosquitto.conf
+ │   ├── dnsmasq.conf
+ │   └── network/interfaces
+ └── usr/
+     └── bin/
+         └── TankApp
+
+
+Ce répertoire est référencé dans Buildroot via :
+
+System configuration
+→ Root filesystem overlay directories
+→ overlay
+
+
+Lors de la compilation, Buildroot copie automatiquement ces fichiers dans le système final.
+
+6. Démarrage automatique
+
+Le système utilise BusyBox init et les scripts /etc/init.d.
+
+S40network :
+
+configure l’interface WiFi en mode Access Point,
+
+lance hostapd, dnsmasq et mosquitto.
+
+S57app :
+
+lance automatiquement l’application PyQt5 TankApp.
+
+Les scripts sont exécutés automatiquement au boot selon leur ordre (Sxx).
+
+7. Splash screen personnalisé
+
+Aucun splash screen n’est fourni.
+
+L’étudiant doit :
+
+créer une image personnalisée (PNG),
+
+l’intégrer dans /usr/share/,
+
+écrire un script de démarrage (ex. S05splash) pour afficher l’image très tôt au boot.
+
+La méthode est libre (framebuffer, fbv, psplash, etc.).
+
+8. Rôle de Buildroot
+
+Buildroot est utilisé pour :
+
+générer le noyau Linux,
+
+construire le root filesystem,
+
+intégrer les bibliothèques (Qt, Python),
+
+installer les services réseau,
+
+assembler une image bootable pour Raspberry Pi 5.
+
+L’étudiant ne construit pas Linux manuellement, mais décrit ce qu’il veut, et Buildroot le génère.
+
+9. Conclusion
+
+etc/ définit comment le système se comporte
+
+usr/bin/ contient ce que le système exécute
+
+Buildroot construit tout le reste
+
+L’étudiant est responsable de :
+
+l’analyse des fichiers fournis,
+
+l’identification des dépendances,
+
+l’intégration complète du système.
+
+Ce projet reproduit une situation réelle de Linux embarqué industriel.
