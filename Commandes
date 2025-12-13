@@ -3,7 +3,7 @@
 git clone git://git.buildroot.net/buildroot
 
 # Lancez l’utilitaire de configuration de Buildroot pour le target
-make (Model_defconfig)
+make Model_defconfig
 
 
 # Explorez les diff´erents param`etres propos´es par Buildroot
@@ -18,6 +18,190 @@ mkdir -p overlay/{etc/init.d,etc/hostapd,etc/mosquitto,etc/network,usr/bin}
 
 # afficher tout le contenue de overlay/
 tree overlay/ ou ls -R overlay
+
+1️⃣ Copier dnsmasq.conf
+cp ~/gei1089_projet2/gei1089-projet2-rpi5/projet/dnsmasq.conf overlay/etc/
+2️⃣ Copier hostapd.conf
+cp ~/gei1089_projet2/gei1089-projet2-rpi5/projet/hostapd/hostapd.conf \
+   overlay/etc/hostapd/
+3️⃣ Copier mosquitto.conf
+cp ~/gei1089_projet2/gei1089-projet2-rpi5/projet/mosquitto/mosquitto.conf \
+   overlay/etc/mosquitto/
+4️⃣ Copier interfaces
+cp ~/gei1089_projet2/gei1089-projet2-rpi5/projet/network/interfaces \
+   overlay/etc/network/
+
+🔴 Étape 1 — Vérifier que Buildroot utilise bien l’overlay (rapide)
+
+Dans buildroot/ :
+
+make menuconfig
+
+
+Vérifie / règle :
+
+System configuration
+ → Root filesystem overlay directories
+ → overlay
+
+
+➡️ Sauvegarde et quitte.
+
+🟠 Étape 2 — Activer les paquets OBLIGATOIRES (le plus important)
+
+👉 Là tu ne crées aucun fichier, tu coches des options.
+
+Relance :
+
+make menuconfig
+
+1️⃣ Réseau WiFi AP
+Target packages
+ → Networking applications
+   → [*] hostapd
+
+2️⃣ DHCP / DNS
+Target packages
+ → Networking applications
+   → [*] dnsmasq
+
+3️⃣ MQTT
+Target packages
+ → Networking applications
+   → [*] mosquitto
+
+4️⃣ Outils WiFi (iw)
+Target packages
+ → Networking tools
+   → [*] iw
+
+
+(OBLIGATOIRE à cause de pre-up iw dev wlan0 set type __ap)
+
+5️⃣ SSH
+Target packages
+ → Networking applications
+   → [*] openssh
+
+
+⚠️ IMPORTANT :
+
+System configuration
+ → Root password
+
+
+➡️ mets un mot de passe (sinon SSH ne marchera pas)
+
+🟡 Étape 3 — Python + PyQt5 (application)
+6️⃣ Python 3
+Target packages
+ → Interpreter languages and scripting
+   → [*] python3
+
+7️⃣ Qt5
+Target packages
+ → Graphic libraries and applications
+   → [*] qt5
+
+
+(QtBase avec support graphique suffit)
+
+8️⃣ PyQt5
+Target packages
+ → Interpreter languages and scripting
+   → Python modules
+     → [*] python-pyqt5
+
+🟢 Étape 4 — Permissions des scripts (OBLIGATOIRE)
+
+Sur ta machine hôte :
+
+chmod +x overlay/etc/init.d/S40network
+chmod +x overlay/etc/init.d/S57app
+
+🔵 Étape 5 — Compiler le système
+make -j$(nproc)
+
+
+
+🎯 Objectif du test manuel
+👉 Vérifier que chaque brique fonctionne, AVANT le boot automatique.
+S40network doit :
+configurer wlan0
+lancer hostapd
+lancer dnsmasq
+lancer mosquitto
+
+On va tester une par une, puis le script complet.
+
+🧪 PRÉREQUIS
+
+Image Buildroot compilée
+Carte SD flashée
+Raspberry Pi 5 démarré
+Console série ou clavier/écran
+Login en root
+
+Debougage des problems:
+
+[ Matériel WiFi ]
+        ↓
+[ Driver + Firmware ]
+        ↓
+[ Interface réseau : wlan0 ]
+        ↓
+[ Services : hostapd, dnsmasq, MQTT ]
+
+
+# Vérifier que le script existe et est exécutable
+Sur le Raspberry Pi :
+ls -l /etc/init.d/S40network
+Tu dois voir un x :
+-rwxr-xr-x    1 root root   S40network
+❌ Si pas de x :
+chmod +x /etc/init.d/S40network
+
+#Tester les commandes UNE PAR UNE (TRÈS IMPORTANT)
+Tester l’interface WiFi
+ip link show wlan0
+Si elle est DOWN :
+ifup wlan0
+Puis :
+ip addr show wlan0
+✔️ Tu dois voir :
+inet 192.168.4.1/24
+
+Après ip link show, dis-moi si tu vois :
+Cas 1️⃣ (problème WiFi)
+      1: lo: <LOOPBACK>
+      2: eth0: <BROADCAST,MULTICAST>
+❌ PAS de wlan0
+👉 Ça veut dire :
+      le driver WiFi n’est pas chargé
+      ou le firmware Broadcom manque
+Cas 2️⃣ (driver OK)
+3: wlan0: <BROADCAST,MULTICAST>
+✅ wlan0 existe
+👉 Dans ce cas, le problème vient seulement du timing dans S40network
+
+🧪 Étape suivante IMMÉDIATE (très importante)
+Après ip link show, tape :
+dmesg | grep -i brcm
+ou :
+dmesg | grep -i wlan
+Résultats possibles :
+❌ Firmware manquant
+brcmfmac: firmware not found
+
+👉 Il faut activer :
+Target packages
+ → Firmware
+   → linux-firmware
+     → brcm
+✅ Firmware chargé
+brcmfmac: brcmf_fw_alloc_request
+brcmfmac: brcmf_c_preinit_dcmds
+👉 Driver OK → on corrige seulement S40network
 
 
 
